@@ -1,0 +1,126 @@
+:root {
+  color-scheme: dark;
+
+  /* Typography Scale */
+  --space-3xs: 2px;
+  --space-2xs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+  --space-4xl: 144px;
+
+  --text-xs: 0.8125rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5625rem;
+  --text-2xl: 1.953rem;
+  --text-3xl: 2.441rem;
+
+  --text-display-s: clamp(2.25rem, 3.8vw + 0.5rem, 3.5rem);
+  --text-display: clamp(2.75rem, 4.8vw + 1rem, 5rem);
+  --text-section: clamp(1.85rem, 2.4vw + 0.9rem, 3.25rem);
+  --text-title: clamp(1.2rem, 0.75vw + 0.85rem, 1.55rem);
+  --text-lead: clamp(1.05rem, 0.35vw + 0.95rem, 1.28rem);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+
+  --container: 1440px;
+  --gutter: clamp(20px, 4vw, 64px);
+  --gap-columns: 28px;
+  --section-gap-s: 80px;
+  --section-gap: 120px;
+  --section-gap-l: 160px;
+
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-sticky-nav: 300;
+  --z-modal: 400;
+
+  /* Pulsar Dark Glassmorphism Palette */
+  --color-paper: #0a0c10;
+  --color-paper-2: #12151c;
+  --color-paper-3: #1a1e28;
+  --color-paper-glass: rgba(14, 17, 24, 0.88);
+  --color-paper-hover: rgba(255, 255, 255, 0.05);
+
+  --color-ink: #f8fafc;
+  --color-ink-2: #cbd5e1;
+  --color-muted: #94a3b8;
+  --color-subtle: #64748b;
+
+  --color-rule: rgba(255, 255, 255, 0.09);
+  --color-rule-2: rgba(255, 255, 255, 0.16);
+
+  /* Signature Pulsar Accents (Electric Violet + Vibrant Cyan) */
+  --color-accent: #8b5cf6;
+  --color-accent-hover: #a78bfa;
+  --color-accent-ink: #ffffff;
+  --color-cyan: #06b6d4;
+  --color-cyan-glow: rgba(6, 182, 212, 0.45);
+  --color-violet-glow: rgba(139, 92, 246, 0.38);
+
+  --gradient-pulsar: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+  --gradient-pulsar-hover: linear-gradient(135deg, #a78bfa 0%, #22d3ee 100%);
+
+  --color-focus: #06b6d4;
+  --color-ok: #10b981;
+  --color-warning: #f59e0b;
+  --color-bad: #ef4444;
+
+  --font-display: "Host Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: var(--font-display);
+  --font-mono: "Atkinson Hyperlegible Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+
+  --radius-sm: 6px;
+  --radius-card: 14px;
+  --radius-pill: 9999px;
+  --rule-hair: 1px;
+
+  --shadow-card: 0 12px 36px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 32px rgba(139, 92, 246, 0.28);
+}
+
+/* Light Theme Overrides (Controlled via [data-theme="light"]) */
+html[data-theme="light"] {
+  color-scheme: light;
+
+  --color-paper: #f1f5f9;
+  --color-paper-2: #ffffff;
+  --color-paper-3: #f8fafc;
+  --color-paper-glass: rgba(255, 255, 255, 0.92);
+  --color-paper-hover: rgba(15, 23, 42, 0.04);
+
+  --color-ink: #0f172a;
+  --color-ink-2: #334155;
+  --color-muted: #64748b;
+  --color-subtle: #94a3b8;
+
+  --color-rule: rgba(15, 23, 42, 0.1);
+  --color-rule-2: rgba(15, 23, 42, 0.18);
+
+  --color-accent: #7c3aed;
+  --color-accent-hover: #6d28d9;
+  --color-accent-ink: #ffffff;
+  --color-cyan: #0891b2;
+  --color-cyan-glow: rgba(8, 145, 178, 0.25);
+  --color-violet-glow: rgba(124, 58, 237, 0.25);
+
+  --gradient-pulsar: linear-gradient(135deg, #7c3aed 0%, #0891b2 100%);
+  --gradient-pulsar-hover: linear-gradient(135deg, #6d28d9 0%, #0e7490 100%);
+
+  --shadow-card: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --shadow-glow: 0 0 24px rgba(124, 58, 237, 0.16);
+}
