@@ -3,7 +3,7 @@ const REPO = "darkangle4022211-cpu/pulser-audio";
 const RELEASES_API = `https://api.github.com/repos/${REPO}/releases?per_page=30`;
 const REVIEWS_API = `https://api.github.com/repos/${REPO}/issues?labels=review&state=all&per_page=20`;
 
-const CACHE_KEY = "pulsar_releases_cache_v1";
+const CACHE_KEY = "pulsar_releases_cache_v2";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 // Workspace Captions
@@ -142,6 +142,11 @@ function renderFallbackReleases() {
           name: "Pulsar-Music-Player-Setup-1.1.10.exe",
           size: 170605709,
           browser_download_url: "https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-Setup-1.1.10.exe"
+        },
+        {
+          name: "Pulsar-Music-Player-Portable-1.1.10.exe",
+          size: 170363902,
+          browser_download_url: "https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-Portable-1.1.10.exe"
         }
       ]
     }
@@ -155,17 +160,17 @@ function renderReleases(releases) {
   if (!releases || releases.length === 0) return;
   const latest = releases[0];
 
-  // Update header and hero tags
+  // Update header tag
   const headerTag = document.getElementById("header-release-tag");
-  const heroTag = document.getElementById("hero-release-tag");
   if (headerTag) headerTag.textContent = latest.tag_name;
-  if (heroTag) heroTag.textContent = latest.tag_name;
 
   // Find installable assets across releases
   let appImageAsset = null;
   let snapAsset = null;
   let debAsset = null;
-  let exeAsset = null;
+  let exeSetupAsset = null;
+  let exePortableAsset = null;
+  let appxAsset = null;
 
   for (const rel of releases) {
     for (const a of rel.assets || []) {
@@ -173,81 +178,39 @@ function renderReleases(releases) {
       if (!appImageAsset && lower.endsWith(".appimage")) appImageAsset = { ...a, tag: rel.tag_name };
       if (!snapAsset && lower.endsWith(".snap")) snapAsset = { ...a, tag: rel.tag_name };
       if (!debAsset && lower.endsWith(".deb")) debAsset = { ...a, tag: rel.tag_name };
-      if (!exeAsset && lower.endsWith(".exe") && !lower.includes("blockmap")) exeAsset = { ...a, tag: rel.tag_name };
+      if (!exeSetupAsset && lower.endsWith(".exe") && lower.includes("setup")) exeSetupAsset = { ...a, tag: rel.tag_name };
+      if (!exePortableAsset && lower.endsWith(".exe") && lower.includes("portable")) exePortableAsset = { ...a, tag: rel.tag_name };
+      if (!appxAsset && lower.endsWith(".appx")) appxAsset = { ...a, tag: rel.tag_name };
     }
   }
 
-  // Update Primary Download CTA Button
-  const heroDownloadBtn = document.getElementById("hero-download-btn");
-  const headerDownloadBtn = document.getElementById("header-download-btn");
-  const defaultTarget = appImageAsset || snapAsset || (latest.assets && latest.assets[0]);
-
-  if (defaultTarget) {
-    const dlUrl = defaultTarget.browser_download_url;
-    const sizeStr = formatBytes(defaultTarget.size);
-    if (heroDownloadBtn) {
-      heroDownloadBtn.href = dlUrl;
-      heroDownloadBtn.innerHTML = `<span>Download ${escapeHtml(defaultTarget.tag || latest.tag_name)}</span> <span class="mono" style="opacity:0.8;font-size:0.75rem;">(${sizeStr})</span>`;
-    }
-    if (headerDownloadBtn) {
-      headerDownloadBtn.href = dlUrl;
-      headerDownloadBtn.textContent = `Download ${latest.tag_name}`;
-    }
+  // Update Hero Linux CTA
+  const heroLinuxCta = document.getElementById("hero-linux-cta");
+  if (heroLinuxCta && appImageAsset) {
+    heroLinuxCta.href = appImageAsset.browser_download_url;
+    heroLinuxCta.innerHTML = `
+      <span class="os-symbol">🐧</span>
+      <span>Download Linux AppImage</span>
+      <span class="mono" style="opacity:0.85;font-size:0.75rem;">(${formatBytes(appImageAsset.size)})</span>
+    `;
   }
 
-  // Populate Platform Selector options
-  const platformSelect = document.getElementById("platform-select");
-  if (platformSelect) {
-    platformSelect.innerHTML = "";
-    const options = [
-      appImageAsset && { label: `Linux AppImage (${appImageAsset.tag})`, url: appImageAsset.browser_download_url, size: appImageAsset.size },
-      snapAsset && { label: `Linux Snap (${snapAsset.tag})`, url: snapAsset.browser_download_url, size: snapAsset.size },
-      debAsset && { label: `Debian / Ubuntu .deb (${debAsset.tag})`, url: debAsset.browser_download_url, size: debAsset.size },
-      exeAsset && { label: `Windows Installer .exe (${exeAsset.tag})`, url: exeAsset.browser_download_url, size: exeAsset.size }
-    ].filter(Boolean);
-
-    options.forEach((opt, idx) => {
-      const el = document.createElement("option");
-      el.value = opt.url;
-      el.textContent = `${opt.label} • ${formatBytes(opt.size)}`;
-      if (idx === 0) el.selected = true;
-      platformSelect.appendChild(el);
-    });
-
-    platformSelect.addEventListener("change", (e) => {
-      if (heroDownloadBtn && e.target.value) {
-        heroDownloadBtn.href = e.target.value;
-      }
-    });
+  // Update Hero Windows CTA
+  const heroWindowsCta = document.getElementById("hero-windows-cta");
+  if (heroWindowsCta && exeSetupAsset) {
+    heroWindowsCta.href = exeSetupAsset.browser_download_url;
+    heroWindowsCta.innerHTML = `
+      <span class="os-symbol">🪟</span>
+      <span>Download Windows Setup</span>
+      <span class="mono" style="opacity:0.85;font-size:0.75rem;">(${formatBytes(exeSetupAsset.size)})</span>
+    `;
   }
 
-  // Render Highlighted Release Details
+  // Update Highlight Release Header
   const relTagEl = document.getElementById("highlight-release-tag");
   const relDateEl = document.getElementById("highlight-release-date");
   if (relTagEl) relTagEl.textContent = latest.tag_name;
   if (relDateEl) relDateEl.textContent = formatDate(latest.published_at);
-
-  // Render Asset Cards Grid
-  const assetGrid = document.getElementById("release-assets-grid");
-  if (assetGrid) {
-    const assetsToShow = (latest.assets || []).filter(a => !a.name.endsWith(".json") && !a.name.endsWith(".yml"));
-    assetGrid.innerHTML = assetsToShow.map(a => {
-      const info = classifyAsset(a.name);
-      return `
-        <a href="${escapeHtml(a.browser_download_url)}" class="asset-download-card" download>
-          <div>
-            <div class="asset-name">${escapeHtml(info.label)}</div>
-            <div class="asset-size">${formatBytes(a.size)}</div>
-          </div>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--color-cyan);">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-        </a>
-      `;
-    }).join("");
-  }
 
   // Render Releases History Table
   const historyTbody = document.getElementById("releases-history-tbody");
@@ -265,6 +228,42 @@ function renderReleases(releases) {
       `;
     }).join("");
   }
+}
+
+// OS Switcher (Linux vs Windows)
+function initHeroOsSwitcher() {
+  const linuxBtn = document.getElementById("hero-os-linux-btn");
+  const winBtn = document.getElementById("hero-os-windows-btn");
+  const linuxPanel = document.getElementById("hero-linux-panel");
+  const winPanel = document.getElementById("hero-windows-panel");
+
+  if (!linuxBtn || !winBtn || !linuxPanel || !winPanel) return;
+
+  function switchOs(os) {
+    if (os === "windows") {
+      winBtn.classList.add("active");
+      winBtn.setAttribute("aria-selected", "true");
+      linuxBtn.classList.remove("active");
+      linuxBtn.setAttribute("aria-selected", "false");
+      winPanel.style.display = "block";
+      linuxPanel.style.display = "none";
+    } else {
+      linuxBtn.classList.add("active");
+      linuxBtn.setAttribute("aria-selected", "true");
+      winBtn.classList.remove("active");
+      winBtn.setAttribute("aria-selected", "false");
+      linuxPanel.style.display = "block";
+      winPanel.style.display = "none";
+    }
+  }
+
+  linuxBtn.addEventListener("click", () => switchOs("linux"));
+  winBtn.addEventListener("click", () => switchOs("windows"));
+
+  // Detect user platform automatically
+  const ua = (navigator.userAgent || navigator.platform || "").toLowerCase();
+  const isWindows = ua.includes("win");
+  switchOs(isWindows ? "windows" : "linux");
 }
 
 // Setup Interactive 10-Band Equalizer
@@ -343,15 +342,12 @@ function updateEqSvgCurve() {
   const h = 90;
   const midY = h / 2;
 
-  // Calculate coordinates for 10 points
   const points = currentEqGains.map((gain, idx) => {
     const x = (idx / (EQ_FREQS.length - 1)) * (w - 60) + 30;
-    // -12dB -> bottom (h - 10), +12dB -> top (10)
     const y = midY - (gain / 12) * (midY - 14);
     return { x, y };
   });
 
-  // Construct smooth SVG path
   let d = `M ${points[0].x} ${points[0].y}`;
   for (let i = 0; i < points.length - 1; i++) {
     const p0 = points[i];
@@ -360,7 +356,6 @@ function updateEqSvgCurve() {
     d += ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
   }
 
-  // Draw smooth path with gradient stroke
   svg.innerHTML = `
     <defs>
       <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -407,7 +402,6 @@ function initVisualizer() {
 
     for (let i = 0; i < numBars; i++) {
       if (isPlaying) {
-        // dynamic wave formula
         const target = Math.sin(Date.now() * 0.005 + i * 0.3) * (height * 0.4) + (height * 0.45) + (Math.random() * 8);
         barHeights[i] += (target - barHeights[i]) * 0.25;
       } else {
@@ -429,10 +423,8 @@ function initVisualizer() {
 
   renderFrame();
 
-  // Play/Pause button action
   playBtn.addEventListener("click", () => {
     isPlaying = !isPlaying;
-    const playIcon = playBtn.querySelector("svg");
     if (isPlaying) {
       playBtn.setAttribute("aria-label", "Pause playback");
       playBtn.innerHTML = `
@@ -525,6 +517,48 @@ function initReleasesToggle() {
   });
 }
 
+// Setup Real Reviews System (GitHub Issues API)
+async function fetchRealReviews() {
+  const feed = document.getElementById("reviews-feed");
+  const emptyState = document.getElementById("empty-reviews-state");
+  if (!feed) return;
+
+  try {
+    const res = await fetch(REVIEWS_API);
+    if (!res.ok) return;
+    const issues = await res.json();
+
+    if (Array.isArray(issues) && issues.length > 0) {
+      if (emptyState) emptyState.remove();
+
+      issues.forEach(issue => {
+        const title = issue.title || "";
+        const body = issue.body || "";
+        const user = issue.user ? issue.user.login : "Anonymous";
+
+        let stars = "★★★★★";
+        if (title.includes("1 Star")) stars = "★☆☆☆☆";
+        else if (title.includes("2 Star")) stars = "★★☆☆☆";
+        else if (title.includes("3 Star")) stars = "★★★☆☆";
+        else if (title.includes("4 Star")) stars = "★★★★☆";
+
+        const card = document.createElement("div");
+        card.className = "review-card";
+        card.innerHTML = `
+          <div class="review-header">
+            <span class="reviewer-name">${escapeHtml(user)}</span>
+            <span class="review-stars">${stars}</span>
+          </div>
+          <p class="review-comment">${escapeHtml(body.replace(/### Rating:.*\n/, "").replace(/\*\*Reviewer:.*\n/, "").trim())}</p>
+        `;
+        feed.appendChild(card);
+      });
+    }
+  } catch (err) {
+    console.log("No remote review issues loaded:", err);
+  }
+}
+
 // Setup Review Submission Form
 function initReviewForm() {
   const form = document.getElementById("review-form");
@@ -557,6 +591,10 @@ function initReviewForm() {
 
       const starStr = "★".repeat(starsVal) + "☆".repeat(5 - starsVal);
 
+      // Remove empty state if present
+      const emptyState = document.getElementById("empty-reviews-state");
+      if (emptyState) emptyState.remove();
+
       // Prepend review to feed
       const newCard = document.createElement("div");
       newCard.className = "review-card";
@@ -584,6 +622,7 @@ function initReviewForm() {
 // DOM Ready Init
 document.addEventListener("DOMContentLoaded", () => {
   fetchReleases();
+  initHeroOsSwitcher();
   initThemeToggle();
   initVisualizer();
   initEqualizer();
@@ -591,4 +630,5 @@ document.addEventListener("DOMContentLoaded", () => {
   initTerminalCopy();
   initReleasesToggle();
   initReviewForm();
+  fetchRealReviews();
 });

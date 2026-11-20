@@ -329,6 +329,81 @@ html:not([data-theme="light"]) .theme-icon-moon {
   line-height: 1.6;
 }
 
+/* Hero OS Segmented Control */
+.os-segmented-control {
+  display: flex;
+  background: var(--color-paper-2);
+  border: var(--rule-hair) solid var(--color-rule);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.os-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: all var(--dur-short) var(--ease-out);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.os-tab-btn:hover {
+  color: var(--color-ink);
+}
+
+.os-tab-btn.active {
+  background: var(--color-paper-3);
+  color: var(--color-ink);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+  border: var(--rule-hair) solid var(--color-rule-2);
+}
+
+.os-symbol {
+  font-size: 1.15rem;
+}
+
+.os-tag {
+  font-size: 0.68rem;
+  color: var(--color-cyan);
+  background: rgba(6, 182, 212, 0.1);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.hero-sublinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.sublink-pill {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  background: var(--color-paper-2);
+  border: var(--rule-hair) solid var(--color-rule);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  transition: all var(--dur-short) var(--ease-out);
+}
+
+.sublink-pill:hover {
+  color: var(--color-cyan);
+  border-color: var(--color-cyan);
+}
+
 .hero-cta-group {
   display: flex;
   flex-wrap: wrap;
@@ -667,6 +742,7 @@ html:not([data-theme="light"]) .theme-icon-moon {
   padding-bottom: var(--section-gap);
   border-top: var(--rule-hair) solid var(--color-rule);
   position: relative;
+  overflow-x: clip;
 }
 
 .section-header {
@@ -1043,6 +1119,195 @@ html:not([data-theme="light"]) .theme-icon-moon {
   background: var(--color-paper-hover);
 }
 
+/* Dual OS Distribution Hubs */
+.os-distributions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-xl);
+  margin-bottom: 24px;
+}
+
+.distribution-card {
+  background: var(--color-paper-3);
+  border: var(--rule-hair) solid var(--color-rule);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dist-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+}
+
+.dist-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dist-icon {
+  font-size: 1.8rem;
+}
+
+.dist-title {
+  font-size: var(--text-title);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.dist-desc {
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+  margin-top: 2px;
+}
+
+.dist-badge {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--color-cyan);
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.28);
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.dist-packages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dist-package-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-paper-2);
+  border: var(--rule-hair) solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  text-decoration: none;
+  color: var(--color-ink);
+  transition: all var(--dur-short) var(--ease-out);
+  gap: 12px;
+}
+
+.dist-package-item:hover {
+  border-color: var(--color-cyan);
+  transform: translateY(-1px);
+}
+
+.pkg-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pkg-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+
+.pkg-tag {
+  font-size: 0.65rem;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 1px 5px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.pkg-sub {
+  font-size: 0.72rem;
+  color: var(--color-muted);
+}
+
+.pkg-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.pkg-size {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--color-muted);
+}
+
+.pkg-btn {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-cyan);
+  background: rgba(6, 182, 212, 0.1);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+
+.dist-install-guide {
+  background: rgba(0, 0, 0, 0.25);
+  border: var(--rule-hair) solid var(--color-rule);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.guide-title {
+  font-size: 0.7rem;
+  color: var(--color-muted);
+  text-transform: uppercase;
+}
+
+.guide-code {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-ink-2);
+}
+
+/* Empty Reviews State */
+.empty-reviews-card {
+  text-align: center;
+  padding: 48px 24px;
+  border: 1px dashed var(--color-rule-2);
+  border-radius: var(--radius-card);
+  background: var(--color-paper-2);
+}
+
+.empty-reviews-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+}
+
+.empty-reviews-title {
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--color-ink);
+  margin-bottom: 6px;
+}
+
+.empty-reviews-desc {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  max-width: 44ch;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
 /* Reviews & Feedback Section */
 .reviews-grid {
   display: grid;
@@ -1179,6 +1444,9 @@ html:not([data-theme="light"]) .theme-icon-moon {
   .reviews-grid {
     grid-template-columns: 1fr;
   }
+  .os-distributions-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1245,6 +1513,38 @@ html:not([data-theme="light"]) .theme-icon-moon {
 
   .hero-lead {
     font-size: 1rem;
+  }
+
+  .os-segmented-control {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .os-tab-btn {
+    flex: 1;
+    justify-content: center;
+    padding: 8px 10px;
+  }
+
+  .os-tag {
+    display: none;
+  }
+
+  .dist-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .dist-package-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .pkg-action {
+    width: 100%;
+    justify-content: space-between;
   }
 
   .hero-cta-group {

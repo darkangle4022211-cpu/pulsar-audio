@@ -76,25 +76,64 @@
             An ultra-responsive offline music player engineered for local collections and audiophiles. Features a 10-band hardware equalizer, real-time 60FPS audio visualizer, intelligent mood discovery, and synchronized lyrics.
           </p>
 
-          <div class="hero-cta-group">
-            <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases" class="btn btn--primary" id="hero-download-btn" download>
-              <span>Download <span id="hero-release-tag">v1.1.15</span></span>
-            </a>
+          <!-- OS Selector Tabs (Linux vs Windows) -->
+          <div class="os-segmented-control" role="tablist" aria-label="Select Operating System">
+            <button type="button" class="os-tab-btn active" id="hero-os-linux-btn" role="tab" aria-selected="true" data-os="linux">
+              <span class="os-symbol">🐧</span>
+              <span class="os-label">Linux</span>
+              <span class="os-tag mono">AppImage • Snap • Deb</span>
+            </button>
+            <button type="button" class="os-tab-btn" id="hero-os-windows-btn" role="tab" aria-selected="false" data-os="windows">
+              <span class="os-symbol">🪟</span>
+              <span class="os-label">Windows</span>
+              <span class="os-tag mono">Setup • Portable</span>
+            </button>
+          </div>
 
-            <div class="platform-picker">
-              <label for="platform-select" class="mono" style="margin-right:4px;">Platform:</label>
-              <select id="platform-select" aria-label="Select OS distribution">
-                <option value="#">Loading mirrors...</option>
-              </select>
+          <!-- Linux Hero Action Panel -->
+          <div class="hero-os-panel" id="hero-linux-panel">
+            <div class="hero-cta-group">
+              <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-1.1.10.AppImage" class="btn btn--primary" id="hero-linux-cta" download>
+                <span class="os-symbol">🐧</span>
+                <span>Download Linux AppImage</span>
+                <span class="mono" style="opacity:0.85;font-size:0.75rem;">(216.7 MB)</span>
+              </a>
+              <div class="hero-sublinks">
+                <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.15/pulsar-music-player_1.1.15_amd64.snap" class="sublink-pill" download>Snap Package (90.6 MB)</a>
+                <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.3/pulsar-music-player_1.1.3_amd64.deb" class="sublink-pill" download>Debian / Ubuntu (.deb)</a>
+              </div>
+            </div>
+
+            <div class="terminal-command-box">
+              <div class="terminal-text">
+                <span class="terminal-prompt">$</span>
+                <span id="terminal-command-text">sudo snap install pulsar-music-player</span>
+              </div>
+              <button type="button" class="copy-btn" id="terminal-copy-btn" aria-label="Copy terminal install command">COPY</button>
             </div>
           </div>
 
-          <div class="terminal-command-box">
-            <div class="terminal-text">
-              <span class="terminal-prompt">$</span>
-              <span id="terminal-command-text">sudo snap install pulsar-music-player</span>
+          <!-- Windows Hero Action Panel -->
+          <div class="hero-os-panel" id="hero-windows-panel" style="display:none;">
+            <div class="hero-cta-group">
+              <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-Setup-1.1.10.exe" class="btn btn--primary" id="hero-windows-cta" download>
+                <span class="os-symbol">🪟</span>
+                <span>Download Windows Setup</span>
+                <span class="mono" style="opacity:0.85;font-size:0.75rem;">(162.7 MB)</span>
+              </a>
+              <div class="hero-sublinks">
+                <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-Portable-1.1.10.exe" class="sublink-pill" download>Portable .exe (162.5 MB)</a>
+                <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.15/Pulsar.Music.Player.1.1.15.appx" class="sublink-pill" download>Windows Store (.appx)</a>
+              </div>
             </div>
-            <button type="button" class="copy-btn" id="terminal-copy-btn" aria-label="Copy terminal install command">COPY</button>
+
+            <div class="terminal-command-box">
+              <div class="terminal-text">
+                <span class="terminal-prompt">Win:</span>
+                <span>Pulsar-Music-Player-Setup-1.1.10.exe (64-bit Windows 10/11)</span>
+              </div>
+              <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-Setup-1.1.10.exe" class="copy-btn" download style="text-decoration:none;">GET .EXE</a>
+            </div>
           </div>
 
           <div class="telemetry-badges">
@@ -366,8 +405,115 @@
             </button>
           </div>
 
-          <div class="release-assets-grid" id="release-assets-grid">
-            <!-- Asset cards generated dynamically by app.js -->
+          <!-- Dual OS Distribution Hubs: Linux vs Windows -->
+          <div class="os-distributions-grid">
+            <!-- Linux Card -->
+            <div class="distribution-card">
+              <div class="dist-header">
+                <div class="dist-title-wrap">
+                  <span class="dist-icon">🐧</span>
+                  <div>
+                    <h3 class="dist-title">Linux Distribution Hub</h3>
+                    <div class="dist-desc mono">Universal AppImage, Snap Store, and Debian packages</div>
+                  </div>
+                </div>
+                <span class="dist-badge mono">LINUX x64</span>
+              </div>
+
+              <div class="dist-packages-list" id="linux-packages-list">
+                <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-1.1.10.AppImage" class="dist-package-item" download>
+                  <div class="pkg-info">
+                    <span class="pkg-name">Linux AppImage <span class="pkg-tag">Recommended</span></span>
+                    <span class="pkg-sub">Standalone binary for Ubuntu, Fedora, Arch, Debian</span>
+                  </div>
+                  <div class="pkg-action">
+                    <span class="pkg-size mono">216.7 MB</span>
+                    <span class="pkg-btn">DOWNLOAD</span>
+                  </div>
+                </a>
+
+                <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.15/pulsar-music-player_1.1.15_amd64.snap" class="dist-package-item" download>
+                  <div class="pkg-info">
+                    <span class="pkg-name">Snap Store Package</span>
+                    <span class="pkg-sub">v1.1.15 release with sandboxed desktop runtime</span>
+                  </div>
+                  <div class="pkg-action">
+                    <span class="pkg-size mono">90.6 MB</span>
+                    <span class="pkg-btn">DOWNLOAD</span>
+                  </div>
+                </a>
+
+                <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.3/pulsar-music-player_1.1.3_amd64.deb" class="dist-package-item" download>
+                  <div class="pkg-info">
+                    <span class="pkg-name">Debian / Ubuntu Package (.deb)</span>
+                    <span class="pkg-sub">Native apt/dpkg system integration</span>
+                  </div>
+                  <div class="pkg-action">
+                    <span class="pkg-size mono">243.7 MB</span>
+                    <span class="pkg-btn">DOWNLOAD</span>
+                  </div>
+                </a>
+              </div>
+
+              <div class="dist-install-guide">
+                <div class="guide-title mono">Terminal One-Liner:</div>
+                <code class="guide-code">sudo snap install pulsar-music-player</code>
+              </div>
+            </div>
+
+            <!-- Windows Card -->
+            <div class="distribution-card">
+              <div class="dist-header">
+                <div class="dist-title-wrap">
+                  <span class="dist-icon">🪟</span>
+                  <div>
+                    <h3 class="dist-title">Windows Distribution Hub</h3>
+                    <div class="dist-desc mono">Standard installer, zero-install portable, and AppX package</div>
+                  </div>
+                </div>
+                <span class="dist-badge mono">WIN 10 / 11 (x64)</span>
+              </div>
+
+              <div class="dist-packages-list" id="windows-packages-list">
+                <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-Setup-1.1.10.exe" class="dist-package-item" download>
+                  <div class="pkg-info">
+                    <span class="pkg-name">Windows Installer (.exe) <span class="pkg-tag">Recommended</span></span>
+                    <span class="pkg-sub">Complete setup with desktop shortcuts and auto-updater</span>
+                  </div>
+                  <div class="pkg-action">
+                    <span class="pkg-size mono">162.7 MB</span>
+                    <span class="pkg-btn">DOWNLOAD</span>
+                  </div>
+                </a>
+
+                <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-Portable-1.1.10.exe" class="dist-package-item" download>
+                  <div class="pkg-info">
+                    <span class="pkg-name">Standalone Portable (.exe)</span>
+                    <span class="pkg-sub">Runs directly without administrative privileges</span>
+                  </div>
+                  <div class="pkg-action">
+                    <span class="pkg-size mono">162.5 MB</span>
+                    <span class="pkg-btn">DOWNLOAD</span>
+                  </div>
+                </a>
+
+                <a href="https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.15/Pulsar.Music.Player.1.1.15.appx" class="dist-package-item" download>
+                  <div class="pkg-info">
+                    <span class="pkg-name">Windows Store Package (.appx)</span>
+                    <span class="pkg-sub">Modern Windows sandboxed application package</span>
+                  </div>
+                  <div class="pkg-action">
+                    <span class="pkg-size mono">197.6 MB</span>
+                    <span class="pkg-btn">DOWNLOAD</span>
+                  </div>
+                </a>
+              </div>
+
+              <div class="dist-install-guide">
+                <div class="guide-title mono">Quick Start:</div>
+                <code class="guide-code">Run Pulsar-Music-Player-Setup-1.1.10.exe</code>
+              </div>
+            </div>
           </div>
 
           <div class="releases-table-wrap" id="releases-table-wrap">
@@ -432,30 +578,14 @@
             </form>
           </div>
 
-          <!-- Reviews Feed -->
+          <!-- Reviews Feed (Real user reviews loaded live from GitHub Issues) -->
           <div class="reviews-feed" id="reviews-feed">
-            <div class="review-card">
-              <div class="review-header">
-                <span class="reviewer-name">Alex R. (Linux Desktop User)</span>
-                <span class="review-stars">★★★★★</span>
-              </div>
-              <p class="review-comment">"Finally an offline player on Linux that doesn't feel like it was built in 2005. The 10-band equalizer is super responsive and the daylight mode looks stunning."</p>
-            </div>
-
-            <div class="review-card">
-              <div class="review-header">
-                <span class="reviewer-name">Sam K. (Audiophile)</span>
-                <span class="review-stars">★★★★★</span>
-              </div>
-              <p class="review-comment">"Zero telemetry, instantaneous FLAC library indexing, and a clean canvas visualizer. Exactly what an offline player should be."</p>
-            </div>
-
-            <div class="review-card">
-              <div class="review-header">
-                <span class="reviewer-name">Marcus V.</span>
-                <span class="review-stars">★★★★★</span>
-              </div>
-              <p class="review-comment">"The multi-language playlist support and custom folder scanning are lightning fast. Love the Discover & Flow view for workout sessions."</p>
+            <div class="empty-reviews-card" id="empty-reviews-state">
+              <div class="empty-reviews-icon">🎧</div>
+              <h3 class="empty-reviews-title">No Reviews Yet</h3>
+              <p class="empty-reviews-desc">
+                Be the first to share your thoughts on Pulsar Audio's playback fidelity, 10-band equalizer, and local music management. Reviews submitted through the form appear here live via GitHub Issues.
+              </p>
             </div>
           </div>
         </div>
