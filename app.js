@@ -1,272 +1,65 @@
-// Pulsar Audio Web Profile Engine
 const REPO = "darkangle4022211-cpu/pulser-audio";
 const RELEASES_API = `https://api.github.com/repos/${REPO}/releases?per_page=30`;
 const REVIEWS_API = `https://api.github.com/repos/${REPO}/issues?labels=review&state=all&per_page=20`;
-
-const CACHE_KEY = "pulsar_releases_cache_v2";
+const CACHE_KEY = "pulsar_releases_cache_v3";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
-// Workspace Captions
-const WORKSPACE_DATA = [
+const HERO_SCREENS = [
   {
-    title: "All Tracks Library",
-    file: "./assets/all-tracks.jpg",
-    caption: "Offline Library console: 98 local tracks, instant metadata search, custom tags, and duration sorting."
+    src: "./assets/discover-flow.jpg",
+    alt: "Pulsar Audio Discover and Flow view with local genre pills and track grid",
+    caption: "Offline mood classification sorts local libraries without external requests."
   },
   {
-    title: "Navigation Drawer",
-    file: "./assets/navigation-drawer.jpg",
-    caption: "Collapsible drawer with custom multi-language playlists, library folder watcher, and automated JSON backups."
+    src: "./assets/now-playing.jpg",
+    alt: "Pulsar Audio Now Playing studio with album backdrop and queue sidebar",
+    caption: "Full-screen Now Playing console with queue ordering and LRC lyrics."
   },
   {
-    title: "Discover & Flow",
-    file: "./assets/discover-flow.jpg",
-    caption: "Local mood classification pills (Chill, Lofi, Workout, Focus), Listen Again history, and offline queueing."
+    src: "./assets/all-tracks.jpg",
+    alt: "Pulsar Audio All Tracks library table with metadata columns and inline actions",
+    caption: "Instant folder scanning across FLAC, MP3, WAV, AAC, and OGG collections."
   },
   {
-    title: "Now Playing Studio",
-    file: "./assets/now-playing.jpg",
-    caption: "Immersive full-screen player with dynamic album backdrop blur, Up Next queue, and synchronized lyrics."
-  },
-  {
-    title: "Daylight Mode",
-    file: "./assets/light-mode.jpg",
-    caption: "Pearlescent high-contrast light theme engineered for daytime clarity with zero application reload."
+    src: "./assets/light-mode.jpg",
+    alt: "Pulsar Audio Daylight theme showing high-contrast warm surface",
+    caption: "Switch between nocturnal and daylight surfaces without interrupting audio."
   }
 ];
 
-// Helper: Format Bytes to MB
-function formatBytes(bytes) {
-  if (!bytes || bytes <= 0) return "";
-  return `${(bytes / 1048576).toFixed(1)} MB`;
-}
-
-// Helper: Format Date
-function formatDate(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
-
-// Helper: Escape HTML
-function escapeHtml(text) {
-  return String(text || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-// Classify Asset Type
-function classifyAsset(name) {
-  const lower = name.toLowerCase();
-  if (lower.endsWith(".appimage")) return { platform: "linux", type: "AppImage", label: "Linux AppImage", priority: 1 };
-  if (lower.endsWith(".snap")) return { platform: "linux", type: "Snap", label: "Linux Snap", priority: 2 };
-  if (lower.endsWith(".deb")) return { platform: "linux", type: "deb", label: "Debian / Ubuntu (.deb)", priority: 3 };
-  if (lower.endsWith(".exe") && !lower.includes("blockmap")) {
-    if (lower.includes("portable")) return { platform: "windows", type: "Portable", label: "Windows Portable (.exe)", priority: 4 };
-    return { platform: "windows", type: "Setup", label: "Windows Installer (.exe)", priority: 5 };
+const WORKSPACE_DATA = [
+  {
+    title: "Library and tracks",
+    file: "./assets/all-tracks.jpg",
+    alt: "Pulsar Audio All Tracks library table with metadata columns and inline queue controls",
+    caption: "Offline library table supporting instant metadata search, custom playlists, and FLAC decoding."
+  },
+  {
+    title: "Navigation drawer",
+    file: "./assets/navigation-drawer.jpg",
+    alt: "Pulsar Audio collapsible navigation drawer showing custom playlists and backup triggers",
+    caption: "Collapsible sidebar for playlists, library folder watching, and local JSON backups."
+  },
+  {
+    title: "Discover and flow",
+    file: "./assets/discover-flow.jpg",
+    alt: "Pulsar Audio Discover and Flow mood channel filtering and recently played strip",
+    caption: "Local mood filters (Chill, Lofi, Workout, Focus) and offline queue scheduling."
+  },
+  {
+    title: "Now playing",
+    file: "./assets/now-playing.jpg",
+    alt: "Pulsar Audio Now Playing studio with Up Next queue and synchronized lyrics panel",
+    caption: "Full-screen Now Playing view with Up Next ordering and synchronized LRC lyrics."
+  },
+  {
+    title: "Daylight theme",
+    file: "./assets/light-mode.jpg",
+    alt: "Pulsar Audio Daylight pearlescent theme mode inside desktop window",
+    caption: "High-contrast warm paper theme built for bright desktop environments."
   }
-  if (lower.endsWith(".appx")) return { platform: "windows", type: "AppX", label: "Windows Store (.appx)", priority: 6 };
-  return { platform: "other", type: "other", label: name, priority: 99 };
-}
+];
 
-// Global cached releases
-let gReleases = [];
-
-// Fetch Releases with Cache
-async function fetchReleases() {
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (Date.now() - parsed.timestamp < CACHE_TTL_MS && Array.isArray(parsed.data)) {
-        gReleases = parsed.data;
-        renderReleases(gReleases);
-        return;
-      }
-    }
-  } catch (_) {}
-
-  try {
-    const res = await fetch(RELEASES_API, { headers: { Accept: "application/vnd.github.v3+json" } });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (Array.isArray(data) && data.length > 0) {
-      gReleases = data;
-      try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
-      } catch (_) {}
-      renderReleases(gReleases);
-    }
-  } catch (err) {
-    console.warn("Using fallback release metadata:", err);
-    renderFallbackReleases();
-  }
-}
-
-// Fallback release if offline / rate-limited
-function renderFallbackReleases() {
-  const fallback = [
-    {
-      tag_name: "v1.1.15",
-      name: "v1.1.15 - Production Release",
-      published_at: "2026-11-04T17:39:49Z",
-      body: "Updated Linux Snap packages, Windows AppX builds, and improved audio buffer handling.",
-      assets: [
-        {
-          name: "pulsar-music-player_1.1.15_amd64.snap",
-          size: 94994432,
-          browser_download_url: "https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.15/pulsar-music-player_1.1.15_amd64.snap"
-        },
-        {
-          name: "Pulsar.Music.Player.1.1.15.appx",
-          size: 207218285,
-          browser_download_url: "https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.15/Pulsar.Music.Player.1.1.15.appx"
-        }
-      ]
-    },
-    {
-      tag_name: "v1.1.10",
-      name: "v1.1.10 - Fixed Listen Again Playback",
-      published_at: "2026-10-24T16:39:31Z",
-      body: "Performance boost for local audio indexing and 10-band equalizer curve calculations.",
-      assets: [
-        {
-          name: "Pulsar-Music-Player-1.1.10.AppImage",
-          size: 227259668,
-          browser_download_url: "https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-1.1.10.AppImage"
-        },
-        {
-          name: "Pulsar-Music-Player-Setup-1.1.10.exe",
-          size: 170605709,
-          browser_download_url: "https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-Setup-1.1.10.exe"
-        },
-        {
-          name: "Pulsar-Music-Player-Portable-1.1.10.exe",
-          size: 170363902,
-          browser_download_url: "https://github.com/darkangle4022211-cpu/pulser-audio/releases/download/v1.1.10/Pulsar-Music-Player-Portable-1.1.10.exe"
-        }
-      ]
-    }
-  ];
-  gReleases = fallback;
-  renderReleases(fallback);
-}
-
-// Render Releases to UI
-function renderReleases(releases) {
-  if (!releases || releases.length === 0) return;
-  const latest = releases[0];
-
-  // Update header tag
-  const headerTag = document.getElementById("header-release-tag");
-  if (headerTag) headerTag.textContent = latest.tag_name;
-
-  // Find installable assets across releases
-  let appImageAsset = null;
-  let snapAsset = null;
-  let debAsset = null;
-  let exeSetupAsset = null;
-  let exePortableAsset = null;
-  let appxAsset = null;
-
-  for (const rel of releases) {
-    for (const a of rel.assets || []) {
-      const lower = a.name.toLowerCase();
-      if (!appImageAsset && lower.endsWith(".appimage")) appImageAsset = { ...a, tag: rel.tag_name };
-      if (!snapAsset && lower.endsWith(".snap")) snapAsset = { ...a, tag: rel.tag_name };
-      if (!debAsset && lower.endsWith(".deb")) debAsset = { ...a, tag: rel.tag_name };
-      if (!exeSetupAsset && lower.endsWith(".exe") && lower.includes("setup")) exeSetupAsset = { ...a, tag: rel.tag_name };
-      if (!exePortableAsset && lower.endsWith(".exe") && lower.includes("portable")) exePortableAsset = { ...a, tag: rel.tag_name };
-      if (!appxAsset && lower.endsWith(".appx")) appxAsset = { ...a, tag: rel.tag_name };
-    }
-  }
-
-  // Update Hero Linux CTA
-  const heroLinuxCta = document.getElementById("hero-linux-cta");
-  if (heroLinuxCta && appImageAsset) {
-    heroLinuxCta.href = appImageAsset.browser_download_url;
-    heroLinuxCta.innerHTML = `
-      <span class="os-symbol">🐧</span>
-      <span>Download Linux AppImage</span>
-      <span class="mono" style="opacity:0.85;font-size:0.75rem;">(${formatBytes(appImageAsset.size)})</span>
-    `;
-  }
-
-  // Update Hero Windows CTA
-  const heroWindowsCta = document.getElementById("hero-windows-cta");
-  if (heroWindowsCta && exeSetupAsset) {
-    heroWindowsCta.href = exeSetupAsset.browser_download_url;
-    heroWindowsCta.innerHTML = `
-      <span class="os-symbol">🪟</span>
-      <span>Download Windows Setup</span>
-      <span class="mono" style="opacity:0.85;font-size:0.75rem;">(${formatBytes(exeSetupAsset.size)})</span>
-    `;
-  }
-
-  // Update Highlight Release Header
-  const relTagEl = document.getElementById("highlight-release-tag");
-  const relDateEl = document.getElementById("highlight-release-date");
-  if (relTagEl) relTagEl.textContent = latest.tag_name;
-  if (relDateEl) relDateEl.textContent = formatDate(latest.published_at);
-
-  // Render Releases History Table
-  const historyTbody = document.getElementById("releases-history-tbody");
-  if (historyTbody) {
-    historyTbody.innerHTML = releases.slice(0, 10).map(rel => {
-      const assetCount = (rel.assets || []).length;
-      return `
-        <tr>
-          <td style="font-weight:700;color:var(--color-cyan);">${escapeHtml(rel.tag_name)}</td>
-          <td style="color:var(--color-muted);">${formatDate(rel.published_at)}</td>
-          <td>${escapeHtml(rel.name || rel.tag_name)}</td>
-          <td style="color:var(--color-muted);">${assetCount} files</td>
-          <td><a href="${escapeHtml(rel.html_url)}" target="_blank" rel="noopener" style="color:var(--color-accent);text-decoration:none;">View on GitHub &rarr;</a></td>
-        </tr>
-      `;
-    }).join("");
-  }
-}
-
-// OS Switcher (Linux vs Windows)
-function initHeroOsSwitcher() {
-  const linuxBtn = document.getElementById("hero-os-linux-btn");
-  const winBtn = document.getElementById("hero-os-windows-btn");
-  const linuxPanel = document.getElementById("hero-linux-panel");
-  const winPanel = document.getElementById("hero-windows-panel");
-
-  if (!linuxBtn || !winBtn || !linuxPanel || !winPanel) return;
-
-  function switchOs(os) {
-    if (os === "windows") {
-      winBtn.classList.add("active");
-      winBtn.setAttribute("aria-selected", "true");
-      linuxBtn.classList.remove("active");
-      linuxBtn.setAttribute("aria-selected", "false");
-      winPanel.style.display = "block";
-      linuxPanel.style.display = "none";
-    } else {
-      linuxBtn.classList.add("active");
-      linuxBtn.setAttribute("aria-selected", "true");
-      winBtn.classList.remove("active");
-      winBtn.setAttribute("aria-selected", "false");
-      linuxPanel.style.display = "block";
-      winPanel.style.display = "none";
-    }
-  }
-
-  linuxBtn.addEventListener("click", () => switchOs("linux"));
-  winBtn.addEventListener("click", () => switchOs("windows"));
-
-  // Detect user platform automatically
-  const ua = (navigator.userAgent || navigator.platform || "").toLowerCase();
-  const isWindows = ua.includes("win");
-  switchOs(isWindows ? "windows" : "linux");
-}
-
-// Setup Interactive 10-Band Equalizer
 const EQ_FREQS = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
 const EQ_PRESETS = {
   flat: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -277,61 +70,205 @@ const EQ_PRESETS = {
 };
 
 let currentEqGains = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+let activeOs = "linux";
+let latestInstallMeta = {
+  linuxCmd: "sudo snap install pulsar-music-player",
+  linuxMeta: "Pulsar-Music-Player-1.1.10.AppImage (216.7 MB)",
+  winCmd: "Pulsar-Music-Player-Setup-1.1.10.exe",
+  winMeta: "Pulsar-Music-Player-Setup-1.1.10.exe (162.7 MB)"
+};
 
-function initEqualizer() {
-  const container = document.getElementById("eq-sliders-row");
-  const svgCurve = document.getElementById("eq-svg-curve");
-  if (!container || !svgCurve) return;
-
-  container.innerHTML = EQ_FREQS.map((freq, idx) => {
-    const label = freq >= 1000 ? `${freq / 1000}k` : `${freq}`;
-    return `
-      <div class="eq-slider-col">
-        <span class="eq-db-label" id="eq-val-${idx}">0dB</span>
-        <input type="range" class="eq-range-input" id="eq-slider-${idx}" min="-12" max="12" step="1" value="0" orient="vertical">
-        <span class="eq-freq-label">${label}</span>
-      </div>
-    `;
-  }).join("");
-
-  EQ_FREQS.forEach((_, idx) => {
-    const slider = document.getElementById(`eq-slider-${idx}`);
-    slider.addEventListener("input", (e) => {
-      const val = parseInt(e.target.value, 10);
-      currentEqGains[idx] = val;
-      const label = document.getElementById(`eq-val-${idx}`);
-      if (label) label.textContent = `${val > 0 ? "+" : ""}${val}dB`;
-      updateEqSvgCurve();
-      clearActivePreset();
-    });
-  });
-
-  // Preset Buttons
-  document.querySelectorAll(".preset-btn").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const presetKey = btn.dataset.preset;
-      const gains = EQ_PRESETS[presetKey];
-      if (!gains) return;
-
-      document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-
-      gains.forEach((gain, idx) => {
-        currentEqGains[idx] = gain;
-        const slider = document.getElementById(`eq-slider-${idx}`);
-        const label = document.getElementById(`eq-val-${idx}`);
-        if (slider) slider.value = gain;
-        if (label) label.textContent = `${gain > 0 ? "+" : ""}${gain}dB`;
-      });
-      updateEqSvgCurve();
-    });
-  });
-
-  updateEqSvgCurve();
+function formatBytes(bytes) {
+  if (!bytes || bytes <= 0) return "";
+  return `${(bytes / 1048576).toFixed(1)} MB`;
 }
 
-function clearActivePreset() {
-  document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+function formatDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function escapeHtml(text) {
+  return String(text || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function updateHeroOsReadout() {
+  const cmdEl = document.getElementById("terminal-command-text");
+  const noteEl = document.getElementById("hero-os-note");
+  if (!cmdEl || !noteEl) return;
+
+  if (activeOs === "windows") {
+    cmdEl.textContent = latestInstallMeta.winCmd;
+    noteEl.innerHTML = `<span class="measured">${escapeHtml(latestInstallMeta.winMeta)}</span> plus Portable and AppX builds.`;
+  } else {
+    cmdEl.textContent = latestInstallMeta.linuxCmd;
+    noteEl.innerHTML = `<span class="measured">${escapeHtml(latestInstallMeta.linuxMeta)}</span> plus Snap and Debian packages.`;
+  }
+}
+
+function renderReleases(releases) {
+  if (!Array.isArray(releases) || releases.length === 0) return;
+  const latest = releases[0];
+
+  const headerBtn = document.getElementById("header-download-btn");
+  if (headerBtn) headerBtn.textContent = `Get ${latest.tag_name}`;
+
+  const relTagEl = document.getElementById("highlight-release-tag");
+  const relDateEl = document.getElementById("highlight-release-date");
+  if (relTagEl) relTagEl.textContent = latest.tag_name;
+  if (relDateEl) relDateEl.textContent = formatDate(latest.published_at);
+
+  let appImageAsset = null;
+  let snapAsset = null;
+  let debAsset = null;
+  let exeSetupAsset = null;
+  let exePortableAsset = null;
+  let appxAsset = null;
+
+  for (const rel of releases) {
+    for (const a of rel.assets || []) {
+      const lower = a.name.toLowerCase();
+      if (!appImageAsset && lower.endsWith(".appimage")) appImageAsset = a;
+      if (!snapAsset && lower.endsWith(".snap")) snapAsset = a;
+      if (!debAsset && lower.endsWith(".deb")) debAsset = a;
+      if (!exeSetupAsset && lower.endsWith(".exe") && lower.includes("setup")) exeSetupAsset = a;
+      if (!exePortableAsset && lower.endsWith(".exe") && lower.includes("portable")) exePortableAsset = a;
+      if (!appxAsset && lower.endsWith(".appx")) appxAsset = a;
+    }
+  }
+
+  const heroLinuxCta = document.getElementById("hero-linux-cta");
+  if (heroLinuxCta && appImageAsset) {
+    heroLinuxCta.href = appImageAsset.browser_download_url;
+    heroLinuxCta.setAttribute("download", appImageAsset.name);
+    latestInstallMeta.linuxMeta = `${appImageAsset.name} (${formatBytes(appImageAsset.size)})`;
+  }
+
+  const heroWindowsCta = document.getElementById("hero-windows-cta");
+  if (heroWindowsCta && exeSetupAsset) {
+    heroWindowsCta.href = exeSetupAsset.browser_download_url;
+    heroWindowsCta.setAttribute("download", exeSetupAsset.name);
+    latestInstallMeta.winCmd = exeSetupAsset.name;
+    latestInstallMeta.winMeta = `${exeSetupAsset.name} (${formatBytes(exeSetupAsset.size)})`;
+  }
+
+  const pkgLinks = [
+    ["pkg-appimage", appImageAsset],
+    ["pkg-snap", snapAsset],
+    ["pkg-deb", debAsset],
+    ["pkg-win-setup", exeSetupAsset],
+    ["pkg-win-portable", exePortableAsset],
+    ["pkg-win-appx", appxAsset]
+  ];
+  pkgLinks.forEach(([id, asset]) => {
+    const link = document.getElementById(id);
+    if (!link || !asset) return;
+    link.href = asset.browser_download_url;
+    link.setAttribute("download", asset.name);
+    const row = link.closest("tr");
+    if (row && row.children[2]) row.children[2].textContent = formatBytes(asset.size);
+  });
+
+  updateHeroOsReadout();
+
+  const historyTbody = document.getElementById("releases-history-tbody");
+  if (historyTbody) {
+    historyTbody.innerHTML = releases
+      .slice(0, 10)
+      .map((rel) => {
+        const assetCount = (rel.assets || []).length;
+        return `
+          <tr>
+            <td class="measured">${escapeHtml(rel.tag_name)}</td>
+            <td class="measured muted">${escapeHtml(formatDate(rel.published_at))}</td>
+            <td>${escapeHtml(rel.name || rel.tag_name)}</td>
+            <td class="measured muted">${assetCount} files</td>
+            <td><a href="${escapeHtml(rel.html_url)}" target="_blank" rel="noopener noreferrer">Release</a></td>
+          </tr>
+        `;
+      })
+      .join("");
+  }
+}
+
+async function fetchReleases() {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Date.now() - parsed.ts < CACHE_TTL_MS && Array.isArray(parsed.data)) {
+        renderReleases(parsed.data);
+        return;
+      }
+    }
+  } catch {
+    // Ignore storage error
+  }
+
+  try {
+    const res = await fetch(RELEASES_API, { headers: { Accept: "application/vnd.github+json" } });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (Array.isArray(data) && data.length > 0) {
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+      } catch {
+        // Ignore storage error
+      }
+      renderReleases(data);
+    }
+  } catch {
+    updateHeroOsReadout();
+  }
+}
+
+function initHeroControls() {
+  const linuxBtn = document.getElementById("hero-os-linux-btn");
+  const winBtn = document.getElementById("hero-os-windows-btn");
+  const linuxPanel = document.getElementById("hero-linux-panel");
+  const winPanel = document.getElementById("hero-windows-panel");
+
+  if (linuxBtn && winBtn && linuxPanel && winPanel) {
+    const setOs = (os) => {
+      activeOs = os;
+      const isWin = os === "windows";
+      winBtn.setAttribute("aria-selected", isWin ? "true" : "false");
+      linuxBtn.setAttribute("aria-selected", isWin ? "false" : "true");
+      winPanel.hidden = !isWin;
+      linuxPanel.hidden = isWin;
+      updateHeroOsReadout();
+    };
+
+    linuxBtn.addEventListener("click", () => setOs("linux"));
+    winBtn.addEventListener("click", () => setOs("windows"));
+    const ua = (navigator.userAgent || "").toLowerCase();
+    setOs(ua.includes("win") ? "windows" : "linux");
+  }
+
+  const stageImg = document.getElementById("hero-stage-img");
+  const stageCaption = document.getElementById("hero-stage-caption");
+  const stageBtns = Array.from(document.querySelectorAll("[data-hero-screen]"));
+  stageBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.getAttribute("data-hero-screen"));
+      const item = HERO_SCREENS[idx];
+      if (!item || !stageImg || !stageCaption) return;
+      stageBtns.forEach((b, i) => {
+        const active = i === idx;
+        b.classList.toggle("is-active", active);
+        b.setAttribute("aria-selected", active ? "true" : "false");
+      });
+      stageImg.src = item.src;
+      stageImg.alt = item.alt;
+      stageCaption.textContent = item.caption;
+    });
+  });
 }
 
 function updateEqSvgCurve() {
@@ -357,120 +294,88 @@ function updateEqSvgCurve() {
   }
 
   svg.innerHTML = `
-    <defs>
-      <linearGradient id="curveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#8b5cf6" />
-        <stop offset="100%" stop-color="#06b6d4" />
-      </linearGradient>
-    </defs>
-    <line x1="0" y1="${midY}" x2="${w}" y2="${midY}" stroke="rgba(255,255,255,0.08)" stroke-width="1" stroke-dasharray="4 4" />
-    <path d="${d}" fill="none" stroke="url(#curveGrad)" stroke-width="3" stroke-linecap="round" />
-    ${points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#ffffff" stroke="#06b6d4" stroke-width="2" />`).join("")}
+    <line x1="0" y1="${midY}" x2="${w}" y2="${midY}" stroke="var(--color-rule)" stroke-width="1" stroke-dasharray="4 4" />
+    <path d="${d}" fill="none" stroke="var(--color-accent)" stroke-width="2.5" stroke-linecap="round" />
+    ${points
+      .map(
+        (p) =>
+          `<circle cx="${p.x}" cy="${p.y}" r="4.5" fill="var(--color-paper-2)" stroke="var(--color-accent)" stroke-width="2" />`
+      )
+      .join("")}
   `;
 }
 
-// Setup Interactive Canvas Audio Visualizer
-let isPlaying = false;
-let animFrameId = null;
+function initEqualizer() {
+  const container = document.getElementById("eq-sliders-row");
+  if (!container) return;
 
-function initVisualizer() {
-  const canvas = document.getElementById("visualizer-canvas");
-  const playBtn = document.getElementById("player-play-btn");
-  if (!canvas || !playBtn) return;
+  container.innerHTML = EQ_FREQS.map((freq, idx) => {
+    const label = freq >= 1000 ? `${freq / 1000}k` : `${freq}`;
+    return `
+      <div class="eq-slider-col">
+        <span class="eq-db-label" id="eq-val-${idx}">0 dB</span>
+        <div class="eq-range-wrap">
+          <input type="range" class="eq-range-input" id="eq-slider-${idx}" min="-12" max="12" step="1" value="0" aria-label="${label} Hz gain">
+        </div>
+        <span class="eq-freq-label">${label}</span>
+      </div>
+    `;
+  }).join("");
 
-  const ctx = canvas.getContext("2d");
-  const numBars = 36;
-  const barHeights = new Array(numBars).fill(4);
-
-  function resizeCanvas() {
-    canvas.width = canvas.parentElement.clientWidth * window.devicePixelRatio;
-    canvas.height = canvas.parentElement.clientHeight * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-  }
-  resizeCanvas();
-  window.addEventListener("resize", resizeCanvas);
-
-  function renderFrame() {
-    const width = canvas.width / window.devicePixelRatio;
-    const height = canvas.height / window.devicePixelRatio;
-    ctx.clearRect(0, 0, width, height);
-
-    const barWidth = (width / numBars) - 3;
-    const grad = ctx.createLinearGradient(0, height, 0, 0);
-    grad.addColorStop(0, "#8b5cf6");
-    grad.addColorStop(1, "#06b6d4");
-
-    for (let i = 0; i < numBars; i++) {
-      if (isPlaying) {
-        const target = Math.sin(Date.now() * 0.005 + i * 0.3) * (height * 0.4) + (height * 0.45) + (Math.random() * 8);
-        barHeights[i] += (target - barHeights[i]) * 0.25;
-      } else {
-        barHeights[i] += (4 - barHeights[i]) * 0.1;
-      }
-
-      const x = i * (barWidth + 3);
-      const bHeight = Math.max(3, barHeights[i]);
-      const y = height - bHeight;
-
-      ctx.fillStyle = grad;
-      ctx.beginPath();
-      ctx.roundRect(x, y, barWidth, bHeight, [2, 2, 0, 0]);
-      ctx.fill();
-    }
-
-    animFrameId = requestAnimationFrame(renderFrame);
-  }
-
-  renderFrame();
-
-  playBtn.addEventListener("click", () => {
-    isPlaying = !isPlaying;
-    if (isPlaying) {
-      playBtn.setAttribute("aria-label", "Pause playback");
-      playBtn.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <rect x="6" y="4" width="4" height="16" rx="1"></rect>
-          <rect x="14" y="4" width="4" height="16" rx="1"></rect>
-        </svg>
-      `;
-    } else {
-      playBtn.setAttribute("aria-label", "Play track");
-      playBtn.innerHTML = `
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-          <polygon points="5 3 19 12 5 21 5 3"></polygon>
-        </svg>
-      `;
-    }
+  EQ_FREQS.forEach((_, idx) => {
+    const slider = document.getElementById(`eq-slider-${idx}`);
+    slider.addEventListener("input", (e) => {
+      const val = parseInt(e.target.value, 10);
+      currentEqGains[idx] = val;
+      const label = document.getElementById(`eq-val-${idx}`);
+      if (label) label.textContent = `${val > 0 ? "+" : ""}${val} dB`;
+      document.querySelectorAll(".preset-btn").forEach((b) => b.classList.remove("is-active"));
+      updateEqSvgCurve();
+    });
   });
+
+  document.querySelectorAll(".preset-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const gains = EQ_PRESETS[btn.dataset.preset];
+      if (!gains) return;
+      document.querySelectorAll(".preset-btn").forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      gains.forEach((gain, idx) => {
+        currentEqGains[idx] = gain;
+        const slider = document.getElementById(`eq-slider-${idx}`);
+        const label = document.getElementById(`eq-val-${idx}`);
+        if (slider) slider.value = String(gain);
+        if (label) label.textContent = `${gain > 0 ? "+" : ""}${gain} dB`;
+      });
+      updateEqSvgCurve();
+    });
+  });
+
+  updateEqSvgCurve();
 }
 
-// Setup Workspace Tabs (Scroll-Craft Walkthrough)
 function initWorkspaceWalkthrough() {
-  const tabs = document.querySelectorAll(".ws-tab");
+  const tabs = Array.from(document.querySelectorAll(".ws-tab"));
   const imgEl = document.getElementById("ws-display-img");
   const captionEl = document.getElementById("ws-display-caption");
   if (!tabs.length || !imgEl || !captionEl) return;
 
   tabs.forEach((tab, idx) => {
     tab.addEventListener("click", () => {
-      tabs.forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-
       const item = WORKSPACE_DATA[idx];
-      if (item) {
-        imgEl.style.opacity = "0";
-        setTimeout(() => {
-          imgEl.src = item.file;
-          imgEl.alt = item.title;
-          captionEl.textContent = item.caption;
-          imgEl.style.opacity = "1";
-        }, 150);
-      }
+      if (!item) return;
+      tabs.forEach((t, i) => {
+        const active = i === idx;
+        t.classList.toggle("is-active", active);
+        t.setAttribute("aria-selected", active ? "true" : "false");
+      });
+      imgEl.src = item.file;
+      imgEl.alt = item.alt;
+      captionEl.textContent = item.caption;
     });
   });
 }
 
-// Setup Theme Toggle (Dark Space & Daylight Pearlescent)
 function initThemeToggle() {
   const toggleBtn = document.getElementById("theme-toggle-btn");
   if (!toggleBtn) return;
@@ -486,145 +391,122 @@ function initThemeToggle() {
   });
 }
 
-// Setup Terminal Copy Button
 function initTerminalCopy() {
   const copyBtn = document.getElementById("terminal-copy-btn");
   const cmdText = document.getElementById("terminal-command-text");
+  const statusEl = document.getElementById("live-status");
   if (!copyBtn || !cmdText) return;
 
   copyBtn.addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(cmdText.textContent.trim());
-      copyBtn.textContent = "COPIED!";
-      setTimeout(() => {
-        copyBtn.textContent = "COPY";
-      }, 2000);
-    } catch (_) {
-      copyBtn.textContent = "DONE";
+      copyBtn.textContent = "Copied";
+      if (statusEl) statusEl.textContent = "Command copied.";
+      window.setTimeout(() => {
+        copyBtn.textContent = "Copy";
+      }, 1600);
+    } catch {
+      copyBtn.textContent = "Failed";
     }
   });
 }
 
-// Setup Release History Collapse Toggle
 function initReleasesToggle() {
   const toggleBtn = document.getElementById("releases-history-toggle");
   const tableWrap = document.getElementById("releases-table-wrap");
   if (!toggleBtn || !tableWrap) return;
 
   toggleBtn.addEventListener("click", () => {
-    const isOpen = tableWrap.classList.toggle("open");
-    toggleBtn.textContent = isOpen ? "Hide release history ▲" : "View all 10 releases ▼";
+    const willOpen = tableWrap.hasAttribute("hidden");
+    if (willOpen) {
+      tableWrap.removeAttribute("hidden");
+      toggleBtn.textContent = "Hide release log";
+    } else {
+      tableWrap.setAttribute("hidden", "");
+      toggleBtn.textContent = "Show release log";
+    }
   });
 }
 
-// Setup Real Reviews System (GitHub Issues API)
+function cleanReviewBody(body) {
+  return String(body || "")
+    .replace(/^###\s*Rating:.*$/gim, "")
+    .replace(/^\*\*Reviewer:\*\*.*$/gim, "")
+    .replace(/^\*\*Comment:\*\*$/gim, "")
+    .trim();
+}
+
+function parseRatingLabel(title, body) {
+  const m = `${title} ${body}`.match(/([1-5])\s*(?:Stars|\/ 5)/i);
+  const val = m ? Number(m[1]) : 5;
+  return `${val} / 5`;
+}
+
 async function fetchRealReviews() {
-  const feed = document.getElementById("reviews-feed");
-  const emptyState = document.getElementById("empty-reviews-state");
-  if (!feed) return;
+  const listEl = document.getElementById("reviews-list");
+  const statusEl = document.getElementById("reviews-status");
+  if (!listEl || !statusEl) return;
 
   try {
-    const res = await fetch(REVIEWS_API);
+    const res = await fetch(REVIEWS_API, { headers: { Accept: "application/vnd.github+json" } });
     if (!res.ok) return;
     const issues = await res.json();
+    const reviews = Array.isArray(issues) ? issues.filter((i) => !i.pull_request) : [];
+    statusEl.textContent = `${reviews.length} published`;
 
-    if (Array.isArray(issues) && issues.length > 0) {
-      if (emptyState) emptyState.remove();
+    if (!reviews.length) return;
 
-      issues.forEach(issue => {
-        const title = issue.title || "";
-        const body = issue.body || "";
-        const user = issue.user ? issue.user.login : "Anonymous";
-
-        let stars = "★★★★★";
-        if (title.includes("1 Star")) stars = "★☆☆☆☆";
-        else if (title.includes("2 Star")) stars = "★★☆☆☆";
-        else if (title.includes("3 Star")) stars = "★★★☆☆";
-        else if (title.includes("4 Star")) stars = "★★★★☆";
-
-        const card = document.createElement("div");
-        card.className = "review-card";
-        card.innerHTML = `
-          <div class="review-header">
-            <span class="reviewer-name">${escapeHtml(user)}</span>
-            <span class="review-stars">${stars}</span>
-          </div>
-          <p class="review-comment">${escapeHtml(body.replace(/### Rating:.*\n/, "").replace(/\*\*Reviewer:.*\n/, "").trim())}</p>
+    listEl.innerHTML = reviews
+      .map((issue) => {
+        const user = issue.user ? issue.user.login : "listener";
+        const bodyText = cleanReviewBody(issue.body) || "No comment text provided.";
+        return `
+          <article class="review-item">
+            <div class="review-meta">
+              <span>@${escapeHtml(user)}</span>
+              <span class="measured">${escapeHtml(parseRatingLabel(issue.title, issue.body))}</span>
+            </div>
+            <p>${escapeHtml(bodyText)}</p>
+          </article>
         `;
-        feed.appendChild(card);
-      });
-    }
-  } catch (err) {
-    console.log("No remote review issues loaded:", err);
+      })
+      .join("");
+  } catch {
+    // Keep default empty state
   }
 }
 
-// Setup Review Submission Form
 function initReviewForm() {
   const form = document.getElementById("review-form");
-  const starContainer = document.getElementById("star-rating-picker");
-  const starInput = document.getElementById("rating-stars-val");
-  const feed = document.getElementById("reviews-feed");
+  const help = document.getElementById("review-form-help");
+  if (!form) return;
 
-  if (starContainer && starInput) {
-    const stars = starContainer.querySelectorAll(".star-btn");
-    stars.forEach(star => {
-      star.addEventListener("click", () => {
-        const rating = parseInt(star.dataset.val, 10);
-        starInput.value = rating;
-        stars.forEach(s => {
-          const val = parseInt(s.dataset.val, 10);
-          s.style.opacity = val <= rating ? "1" : "0.3";
-        });
-      });
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("reviewer-name-input").value.trim();
+    const comment = document.getElementById("reviewer-comment-input").value.trim();
+    const rating = document.getElementById("rating-stars-val").value;
+
+    if (!name || !comment) {
+      if (help) help.textContent = "Enter your handle and comment before opening GitHub.";
+      return;
+    }
+
+    const params = new URLSearchParams({
+      labels: "review",
+      title: `[Review] ${name} (${rating} / 5)`,
+      body: `**Rating:** ${rating} / 5\n\n**Reviewer:** ${name}\n\n${comment}`
     });
-  }
 
-  if (form && feed) {
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const name = document.getElementById("reviewer-name-input").value.trim() || "Anonymous Listener";
-      const comment = document.getElementById("reviewer-comment-input").value.trim();
-      const starsVal = parseInt(starInput.value, 10) || 5;
-
-      if (!comment) return;
-
-      const starStr = "★".repeat(starsVal) + "☆".repeat(5 - starsVal);
-
-      // Remove empty state if present
-      const emptyState = document.getElementById("empty-reviews-state");
-      if (emptyState) emptyState.remove();
-
-      // Prepend review to feed
-      const newCard = document.createElement("div");
-      newCard.className = "review-card";
-      newCard.innerHTML = `
-        <div class="review-header">
-          <span class="reviewer-name">${escapeHtml(name)}</span>
-          <span class="review-stars">${starStr}</span>
-        </div>
-        <p class="review-comment">${escapeHtml(comment)}</p>
-      `;
-      feed.prepend(newCard);
-
-      // Open GitHub Issue in new tab
-      const issueTitle = encodeURIComponent(`[Review] ${name} (${starsVal} Stars)`);
-      const issueBody = encodeURIComponent(`### Rating: ${starStr}\n\n**Reviewer:** ${name}\n\n**Comment:**\n${comment}`);
-      const issueUrl = `https://github.com/${REPO}/issues/new?title=${issueTitle}&body=${issueBody}&labels=review`;
-      window.open(issueUrl, "_blank");
-
-      form.reset();
-      alert("Thank you! Your review has been added and prepared on GitHub.");
-    });
-  }
+    if (help) help.textContent = "Prepared a pre-filled issue draft in a new GitHub tab.";
+    window.open(`https://github.com/${REPO}/issues/new?${params.toString()}`, "_blank", "noopener,noreferrer");
+  });
 }
 
-// DOM Ready Init
 document.addEventListener("DOMContentLoaded", () => {
   fetchReleases();
-  initHeroOsSwitcher();
+  initHeroControls();
   initThemeToggle();
-  initVisualizer();
   initEqualizer();
   initWorkspaceWalkthrough();
   initTerminalCopy();
