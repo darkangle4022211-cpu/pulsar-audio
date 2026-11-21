@@ -11,6 +11,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500&family=Instrument+Sans:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" type="image/webp" href="./assets/discover-flow.webp">
+  <link rel="preload" as="image" type="image/webp" href="./assets/now-playing.webp">
+  <link rel="preload" as="image" type="image/webp" href="./assets/all-tracks.webp">
+  <link rel="preload" as="image" type="image/webp" href="./assets/light-mode.webp">
+  <link rel="preload" as="image" type="image/webp" href="./assets/navigation-drawer.webp">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -82,14 +87,43 @@
 
         <figure class="intro-stage">
           <div class="panel intro-panel">
-            <div class="screen-frame">
+            <div class="screen-frame stage-frame" id="intro-stage-frame">
               <img
-                id="hero-stage-img"
-                src="./assets/discover-flow.jpg"
+                class="stage-img is-visible"
+                src="./assets/discover-flow.webp"
                 alt="Pulsar Audio Discover and Flow view with local genre pills and track grid"
-                width="1024"
-                height="556"
+                width="1920"
+                height="1043"
+                loading="eager"
+                decoding="sync"
                 fetchpriority="high"
+              >
+              <img
+                class="stage-img"
+                src="./assets/now-playing.webp"
+                alt="Pulsar Audio Now Playing studio with album backdrop and queue sidebar"
+                width="1920"
+                height="1043"
+                loading="eager"
+                decoding="sync"
+              >
+              <img
+                class="stage-img"
+                src="./assets/all-tracks.webp"
+                alt="Pulsar Audio All Tracks library table with metadata columns and inline actions"
+                width="1920"
+                height="1043"
+                loading="eager"
+                decoding="sync"
+              >
+              <img
+                class="stage-img"
+                src="./assets/light-mode.webp"
+                alt="Pulsar Audio Daylight theme showing high-contrast warm surface"
+                width="1920"
+                height="1043"
+                loading="eager"
+                decoding="sync"
               >
             </div>
             <div class="intro-stage-bar" role="tablist" aria-label="Preview desktop view">
@@ -145,13 +179,51 @@
         </div>
 
         <figure class="panel ws-stage">
-          <div class="screen-frame">
+          <div class="screen-frame stage-frame" id="workspace-stage-frame">
             <img
-              id="ws-display-img"
-              src="./assets/all-tracks.jpg"
+              class="stage-img is-visible"
+              src="./assets/all-tracks.webp"
               alt="Pulsar Audio All Tracks library table with metadata columns and inline queue controls"
-              width="1024"
-              height="556"
+              width="1920"
+              height="1043"
+              loading="eager"
+              decoding="sync"
+            >
+            <img
+              class="stage-img"
+              src="./assets/navigation-drawer.webp"
+              alt="Pulsar Audio collapsible navigation drawer showing custom playlists and backup triggers"
+              width="1920"
+              height="1043"
+              loading="eager"
+              decoding="sync"
+            >
+            <img
+              class="stage-img"
+              src="./assets/discover-flow.webp"
+              alt="Pulsar Audio Discover and Flow mood channel filtering and recently played strip"
+              width="1920"
+              height="1043"
+              loading="eager"
+              decoding="sync"
+            >
+            <img
+              class="stage-img"
+              src="./assets/now-playing.webp"
+              alt="Pulsar Audio Now Playing studio with Up Next queue and synchronized lyrics panel"
+              width="1920"
+              height="1043"
+              loading="eager"
+              decoding="sync"
+            >
+            <img
+              class="stage-img"
+              src="./assets/light-mode.webp"
+              alt="Pulsar Audio Daylight pearlescent theme mode inside desktop window"
+              width="1920"
+              height="1043"
+              loading="eager"
+              decoding="sync"
             >
           </div>
           <figcaption class="ws-meta">

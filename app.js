@@ -6,22 +6,22 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 
 const HERO_SCREENS = [
   {
-    src: "./assets/discover-flow.jpg",
+    src: "./assets/discover-flow.webp",
     alt: "Pulsar Audio Discover and Flow view with local genre pills and track grid",
     caption: "Offline mood classification sorts local libraries without external requests."
   },
   {
-    src: "./assets/now-playing.jpg",
+    src: "./assets/now-playing.webp",
     alt: "Pulsar Audio Now Playing studio with album backdrop and queue sidebar",
     caption: "Full-screen Now Playing console with queue ordering and LRC lyrics."
   },
   {
-    src: "./assets/all-tracks.jpg",
+    src: "./assets/all-tracks.webp",
     alt: "Pulsar Audio All Tracks library table with metadata columns and inline actions",
     caption: "Instant folder scanning across FLAC, MP3, WAV, AAC, and OGG collections."
   },
   {
-    src: "./assets/light-mode.jpg",
+    src: "./assets/light-mode.webp",
     alt: "Pulsar Audio Daylight theme showing high-contrast warm surface",
     caption: "Switch between nocturnal and daylight surfaces without interrupting audio."
   }
@@ -30,31 +30,31 @@ const HERO_SCREENS = [
 const WORKSPACE_DATA = [
   {
     title: "Library and tracks",
-    file: "./assets/all-tracks.jpg",
+    file: "./assets/all-tracks.webp",
     alt: "Pulsar Audio All Tracks library table with metadata columns and inline queue controls",
     caption: "Offline library table supporting instant metadata search, custom playlists, and FLAC decoding."
   },
   {
     title: "Navigation drawer",
-    file: "./assets/navigation-drawer.jpg",
+    file: "./assets/navigation-drawer.webp",
     alt: "Pulsar Audio collapsible navigation drawer showing custom playlists and backup triggers",
     caption: "Collapsible sidebar for playlists, library folder watching, and local JSON backups."
   },
   {
     title: "Discover and flow",
-    file: "./assets/discover-flow.jpg",
+    file: "./assets/discover-flow.webp",
     alt: "Pulsar Audio Discover and Flow mood channel filtering and recently played strip",
     caption: "Local mood filters (Chill, Lofi, Workout, Focus) and offline queue scheduling."
   },
   {
     title: "Now playing",
-    file: "./assets/now-playing.jpg",
+    file: "./assets/now-playing.webp",
     alt: "Pulsar Audio Now Playing studio with Up Next queue and synchronized lyrics panel",
     caption: "Full-screen Now Playing view with Up Next ordering and synchronized LRC lyrics."
   },
   {
     title: "Daylight theme",
-    file: "./assets/light-mode.jpg",
+    file: "./assets/light-mode.webp",
     alt: "Pulsar Audio Daylight pearlescent theme mode inside desktop window",
     caption: "High-contrast warm paper theme built for bright desktop environments."
   }
@@ -251,21 +251,22 @@ function initHeroControls() {
     setOs(ua.includes("win") ? "windows" : "linux");
   }
 
-  const stageImg = document.getElementById("hero-stage-img");
+  const stageImgs = Array.from(document.querySelectorAll("#intro-stage-frame .stage-img"));
   const stageCaption = document.getElementById("hero-stage-caption");
   const stageBtns = Array.from(document.querySelectorAll("[data-hero-screen]"));
   stageBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       const idx = Number(btn.getAttribute("data-hero-screen"));
       const item = HERO_SCREENS[idx];
-      if (!item || !stageImg || !stageCaption) return;
+      if (!item || !stageImgs.length || !stageCaption) return;
       stageBtns.forEach((b, i) => {
         const active = i === idx;
         b.classList.toggle("is-active", active);
         b.setAttribute("aria-selected", active ? "true" : "false");
       });
-      stageImg.src = item.src;
-      stageImg.alt = item.alt;
+      stageImgs.forEach((img, i) => {
+        img.classList.toggle("is-visible", i === idx);
+      });
       stageCaption.textContent = item.caption;
     });
   });
@@ -356,9 +357,9 @@ function initEqualizer() {
 
 function initWorkspaceWalkthrough() {
   const tabs = Array.from(document.querySelectorAll(".ws-tab"));
-  const imgEl = document.getElementById("ws-display-img");
+  const stageImgs = Array.from(document.querySelectorAll("#workspace-stage-frame .stage-img"));
   const captionEl = document.getElementById("ws-display-caption");
-  if (!tabs.length || !imgEl || !captionEl) return;
+  if (!tabs.length || !stageImgs.length || !captionEl) return;
 
   tabs.forEach((tab, idx) => {
     tab.addEventListener("click", () => {
@@ -369,8 +370,9 @@ function initWorkspaceWalkthrough() {
         t.classList.toggle("is-active", active);
         t.setAttribute("aria-selected", active ? "true" : "false");
       });
-      imgEl.src = item.file;
-      imgEl.alt = item.alt;
+      stageImgs.forEach((img, i) => {
+        img.classList.toggle("is-visible", i === idx);
+      });
       captionEl.textContent = item.caption;
     });
   });
@@ -503,7 +505,16 @@ function initReviewForm() {
   });
 }
 
+function warmStageImages() {
+  document.querySelectorAll(".stage-img").forEach((img) => {
+    if (img.decode) {
+      img.decode().catch(() => {});
+    }
+  });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  warmStageImages();
   fetchReleases();
   initHeroControls();
   initThemeToggle();
